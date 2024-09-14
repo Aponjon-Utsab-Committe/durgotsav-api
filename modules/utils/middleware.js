@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const db = require("../../db");
 
 module.exports.verifyToken = async (req, res, next) => {
-  console.log(req.headers);
   const token = req.headers["x-access-token"];
 
   if (!token) {
