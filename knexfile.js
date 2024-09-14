@@ -1,11 +1,15 @@
+require("dotenv");
+
+console.log(process.env);
+
 module.exports = {
   development: {
     client: "postgresql",
     connection: {
-      host: "localhost",
-      database: "auc",
-      user: "postgres",
-      password: "admin",
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
     },
     migrations: {
       tableName: "knex_migrations",
@@ -15,10 +19,10 @@ module.exports = {
   production: {
     client: "postgresql",
     connection: {
-      host: "na",
-      database: "auc",
-      user: "postgres",
-      password: "3",
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
     },
     migrations: {
       tableName: "knex_migrations",
