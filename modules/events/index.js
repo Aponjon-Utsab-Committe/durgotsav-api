@@ -35,7 +35,7 @@ router.post("/", middleware.verifyToken, async (req, res) => {
 /**
  * Get events
  */
-router.get("/", middleware.verifyToken, async (req, res) => {
+router.get("/", async (req, res) => {
   console.log("GET /events");
   try {
     const limit = req.query.page_size || 10;
@@ -68,7 +68,7 @@ router.get("/", middleware.verifyToken, async (req, res) => {
 /**
  * Get event by id
  */
-router.get("/:id", middleware.verifyToken, async (req, res) => {
+router.get("/:id", async (req, res) => {
   console.log(`GET /events/${req.query.id}`);
   try {
     const [row] = await db("events").where({ id: req.params.id });
