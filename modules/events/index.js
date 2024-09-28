@@ -8,6 +8,11 @@ const middleware = require("../utils/middleware");
 router.post("/", middleware.verifyToken, async (req, res) => {
   console.log("POST /events");
   try {
+    if (req.user.role !== "ADMIN") {
+      return res.status(403).send({
+        message: "Only ADMIN can create event",
+      });
+    }
     const [row] = await db("events").where({ name: req.body.name.trim() });
 
     if (row) {
@@ -95,25 +100,42 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", middleware.verifyToken, async (req, res) => {
   console.log(`PUT /events/${req.query.id}`);
   try {
-    const [row] = await db("events")
-      .where({ name: req.body.name.trim() })
-      .whereNot({ id: req.params.id });
-
-    if (row) {
-      return res.status(500).send({
-        message: "Another event with same event name already exists",
+    if (req.user.role !== "ADMIN") {
+      return res.status(403).send({
+        message: "Only ADMIN can update event",
       });
     }
 
-    delete req.body.id;
-    delete req.body.created_at;
-    delete req.body.updated_at;
+    const [existingEvent] = await db("events").where({ id: req.params.id });
 
-    await db("events")
-      .update({
-        ...req.body,
-      })
-      .where({ id: req.params.id });
+    if (!existingEvent) {
+      return res.status(404).send({
+        message: "Event doesn't exist",
+      });
+    }
+
+    if (req.body.name) {
+      const [row] = await db("events")
+        .where({ name: req.body.name.trim() })
+        .whereNot({ id: req.params.id });
+
+      if (row) {
+        return res.status(500).send({
+          message: "Another event with same event name already exists",
+        });
+      }
+    }
+
+    const payload = {
+      ...existingEvent,
+      ...req.body,
+    };
+
+    delete payload.id;
+    delete payload.created_at;
+    delete payload.updated_at;
+
+    await db("events").update(payload).where({ id: req.params.id });
 
     return res.status(200).send({
       message: "Event successfully updated",
