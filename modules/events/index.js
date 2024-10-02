@@ -53,13 +53,16 @@ router.get("/", async (req, res) => {
     }
 
     const [{ count: total }] = await query.clone().count();
-    const list = await query.limit(limit).offset(offset);
+    const list = await query
+      .limit(limit)
+      .offset(offset)
+      .orderBy("updated_at", "desc");
 
     return res.status(200).send({
       list,
       page_no: index,
       page_size: limit,
-      total,
+      total: Number(total),
     });
   } catch (e) {
     console.log("err:", e);
@@ -84,7 +87,9 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    return res.status(200).send(row);
+    const activities = await db("activities").where({ event_id: req.params.id });
+
+    return res.status(200).send({ ...row, activities });
   } catch (e) {
     console.log("err:", e);
     return res.status(500).send({
@@ -133,7 +138,7 @@ router.put("/:id", middleware.verifyToken, async (req, res) => {
 
     delete payload.id;
     delete payload.created_at;
-    delete payload.updated_at;
+    payload.updated_at = new Date();
 
     await db("events").update(payload).where({ id: req.params.id });
 
